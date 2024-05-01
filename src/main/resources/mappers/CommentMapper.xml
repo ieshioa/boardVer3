@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.green.boardver3.comment.CommentMapper">
+
+    <insert id="postComment">    <!-- 댓글 달기 -->
+        INSERT INTO comment
+        SET contents = #{contents}
+            , writer_id = #{writerId}
+            , board_id = #{boardId}
+    </insert>
+
+    <select id="getComment">    <!-- 댓글 한개 가져오기 -->
+        SELECT comment_id AS commentId, contents, writer_id AS writerId, board_id AS boardId
+                , created_at AS createdAt, updated_at AS updatedAt
+        FROM comment
+        WHERE comment_id = #{commentId}
+    </select>
+
+    <select id="getComments">    <!-- 보드에 달린 댓글 가져오기 (페이징) -->
+        SELECT A.comment_id AS commentId, A.contents, A.writer_id AS writerId
+            , B.nm AS writerName, A.created_at AS createdAt
+        FROM comment A
+        JOIN user B
+        ON A.writer_id = B.user_id
+        WHERE A.board_id = #{boardId}
+        ORDER BY A.comment_id
+        LIMIT #{startIdx}, #{len}
+    </select>
+
+    <select id="getCommentsCount">
+        SELECT COUNT(comment_id)
+        FROM comment
+        WHERE board_id = #{boardId}
+    </select>
+
+    <select id="getTotalCommentPage">
+        SELECT CEIL(COUNT(comment_id) / #{len})  <!-- 소수점 올림처리 -->
+        FROM comment
+        WHERE board_id = #{boardId}
+    </select>
+
+    <update id="putComment">    <!-- 댓글 수정하기 -->
+        UPDATE comment
+        SET contents = #{contents}
+        WHERE comment_id = #{commentId}
+            AND writer_id = #{writerId}
+    </update>
+
+    <delete id="delComment">    <!-- 댓글 지우기 -->
+        DELETE FROM comment
+        WHERE comment_id = #{commentId}
+            AND writer_id = #{writerId}
+    </delete>
+
+    <delete id="delCommentsWithBoard">    <!-- 보드에 달린 댓글 모두 지우기 -->
+        DELETE FROM comment
+        WHERE board_id = #{boardId}
+    </delete>
+</mapper>
